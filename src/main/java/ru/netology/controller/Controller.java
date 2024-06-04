@@ -1,5 +1,9 @@
 package ru.netology.controller;
 
+import jakarta.annotation.security.RolesAllowed;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,23 +23,27 @@ public class Controller {
         this.service = service;
     }
 
+    @Secured({"ROLE_READ"})
     @GetMapping("/by-city")
     public List<Person> getPerson(@RequestParam("city") String city) {
         return service.getPersonsByCity(city);
     }
 
+    @RolesAllowed({"ROLE_WRITE"})
     @GetMapping("/by-age")
     public List<Person> getAge(@RequestParam("age") int age) {
         return service.getAge(age);
     }
 
+    @PreAuthorize("hasRole('ROLE_WRITE') or hasRole('ROLE_DELETE')")
     @GetMapping("/name-and-surname")
     public Optional<Person> getNameSurname(@RequestParam("name") String name, @RequestParam("surname") String surname) {
         return service.getNameSurname(name, surname);
     }
 
+    @PostAuthorize("#username == authentication.principal.username")
     @GetMapping("/welcome")
-    public String getWelcome() {
-        return "Welcome";
+    public String getWelcome(String username) {
+        return "Welcome " + username;
     }
 }
